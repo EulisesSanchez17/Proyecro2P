@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes, useNavigate } from 'react-route
 import Bienvenida from '../Interfa2/Bienvenida';
 import Postular from '../Interfaz3/Postular';
 import Consultabeca from '../Interfaz4/Consultabeca'; // Importa el componente Consultabeca
-import Formulario from '../Interfaz5/Formulario'; // Importa el componente Formulario
 import Admin from '../InterfazAdmin/admin'; // Importa el componente Admin
 import GestionAdmin from '../InterfazAdmin/GestionAdmin'; // Importa el componente GestionAdmin
 
@@ -89,17 +88,39 @@ function App() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    
+    // Validar que se haya seleccionado un tipo de usuario
+    if (!userType) {
+      setMessage('Por favor, seleccione un tipo de usuario.');
+      return;
+    }
+    
+    // Validar el formato del correo electrónico usando una expresión regular básica
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMessage('Por favor, ingrese un correo electrónico válido.');
+      return;
+    }
+  
+    // Validar la longitud mínima de la contraseña
+    if (password.length < 8) {
+      setMessage('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+  
+    // Credenciales válidas
     const credentials = [
       { userType: 'student', email: 'e1312961434@uleam.live.edu.ec', password: 'mary2000xD' },
       { userType: 'admin', email: 'administrador@gmail.com', password: 'mary2000xd' }
     ];
-
+  
     const storedCredentials = credentials.find(cred => cred.userType === userType);
+  
     if (!storedCredentials) {
-      setMessage('Por favor, seleccione un tipo de usuario.');
+      setMessage('Tipo de usuario no válido.');
       return;
     }
-
+  
     if (email === storedCredentials.email && password === storedCredentials.password) {
       setIsAuthenticated(true);
       setUserRole(userType);
@@ -143,7 +164,6 @@ function AppWrapper() {
         <Route path="/bienvenida" element={<Bienvenida />} />
         <Route path="/postular" element={<Postular />} />
         <Route path="/consultabeca" element={<Consultabeca />} />
-        <Route path="/formulario" element={<Formulario />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/gestionadmin" element={<GestionAdmin />} /> {/* Nueva ruta hacia GestionAdmin */}
       </Routes>

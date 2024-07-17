@@ -1,36 +1,40 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const GestionAdmin = () => {
-  const navigate = useNavigate();
   const [solicitudes, setSolicitudes] = useState([]);
 
   useEffect(() => {
-    // Aquí deberías tener alguna lógica para cargar las solicitudes desde algún servicio o almacenamiento
-    // Ejemplo estático:
-    const solicitudesEjemplo = [
-      {
-        id: 1,
-        nombre: 'Nombre del Estudiante 1',
-        correo: 'estudiante1@correo.com',
-        tipoBeca: 'Beca de Mérito',
-        estado: 'Pendiente',
-        archivo: 'ruta/al/archivo_del_estudiante1.pdf',
-      },
-      {
-        id: 2,
-        nombre: 'Nombre del Estudiante 2',
-        correo: 'estudiante2@correo.com',
-        tipoBeca: 'Beca Deportiva',
-        estado: 'Pendiente',
-        archivo: 'ruta/al/archivo_del_estudiante2.pdf',
-      },
-    ];
-    setSolicitudes(solicitudesEjemplo);
+    const storedSolicitudes = JSON.parse(localStorage.getItem('gestionAdminData')) || [];
+    setSolicitudes(storedSolicitudes);
   }, []);
 
-  const handleVolver = () => {
-    navigate('/admin');
+  const handleActualizarEstado = (index, estado) => {
+    const updatedSolicitudes = [...solicitudes];
+    updatedSolicitudes[index].estado = estado;
+    setSolicitudes(updatedSolicitudes);
+    localStorage.setItem('gestionAdminData', JSON.stringify(updatedSolicitudes));
+
+    const solicitudBeca = JSON.parse(localStorage.getItem('solicitudBeca'));
+    if (solicitudBeca) {
+      solicitudBeca.estado = estado;
+      localStorage.setItem('solicitudBeca', JSON.stringify(solicitudBeca));
+    }
+  };
+
+  const handleFileDownload = (base64String, fileName) => {
+    const linkSource = `data:application/pdf;base64,${base64String}`;
+    const downloadLink = document.createElement('a');
+    downloadLink.href = linkSource;
+    downloadLink.download = fileName;
+    downloadLink.target = '_blank'; // Abrir en una nueva pestaña
+    downloadLink.click();
+  };
+
+  const handleEliminarSolicitud = (index) => {
+    const updatedSolicitudes = solicitudes.filter((_, i) => i !== index);
+    setSolicitudes(updatedSolicitudes);
+    localStorage.setItem('gestionAdminData', JSON.stringify(updatedSolicitudes));
   };
 
   const styles = {
@@ -38,23 +42,31 @@ const GestionAdmin = () => {
       fontFamily: 'Arial, sans-serif',
       margin: 0,
       padding: 0,
-      backgroundColor: '#f4f4f4',
+      backgroundColor: 'transparent',
       backgroundImage: `url(${process.env.PUBLIC_URL}/LogoUleam.png)`,
       backgroundSize: 'cover',
       backgroundRepeat: 'no-repeat',
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     header: {
       width: '100%',
       backgroundColor: '#313132',
       color: 'white',
       display: 'flex',
-      justifyContent: 'flex-start',
+      justifyContent: 'space-between',
       padding: '10px 20px',
       boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+      position: 'fixed',
+      top: 0,
+      zIndex: 1000
     },
-    buttons: {
+    headerLeft: {
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'center'
     },
     button: {
       backgroundColor: '#b7bfc2',
@@ -65,133 +77,138 @@ const GestionAdmin = () => {
       cursor: 'pointer',
       borderRadius: '4px',
       transition: 'background 0.3s ease',
-      marginLeft: '10px',
+      textDecoration: 'none'
     },
-    buttonHover: {
-      backgroundColor: '#21a8d5',
-    },
-    container: {
-      maxWidth: '800px',
-      margin: '40px auto',
+    main: {
+      width: '100%',
+      maxWidth: '1000px',
+      margin: '80px auto 40px auto',
       padding: '20px',
-      backgroundColor: '#fff',
-      borderRadius: '5px',
-      boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+      backgroundColor: 'transparent',
+      borderRadius: '10px',
+      boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)'
     },
-    h2: {
-      textAlign: 'center',
-      marginBottom: '20px',
+    section: {
+      marginBottom: '20px'
+    },
+    title: {
       color: '#333',
-    },
-    solicitudesList: {
-      marginTop: '20px',
-    },
-    solicitud: {
-      border: '1px solid #ccc',
-      borderRadius: '5px',
-      padding: '15px',
-      marginBottom: '15px',
-      backgroundColor: '#f9f9f9',
-    },
-    solicitudInfo: {
       marginBottom: '10px',
+      textAlign: 'center'
     },
-    solicitudH3: {
-      marginTop: 0,
-      color: '#007bff',
+    consultaTable: {
+      marginBottom: '20px'
     },
-    solicitudP: {
-      margin: '5px 0',
+    table: {
+      width: '100%',
+      borderCollapse: 'collapse',
+      marginBottom: '20px'
     },
-    acciones: {
-      textAlign: 'right',
+    thead: {
+      backgroundColor: '#3498db',
+      color: 'white'
     },
-    btnAprobar: {
-      padding: '8px 16px',
-      marginLeft: '10px',
+    th: {
+      padding: '10px',
+      border: '1px solid #ccc',
+      textAlign: 'left'
+    },
+    td: {
+      padding: '10px',
+      border: '1px solid #ccc',
+      textAlign: 'left'
+    },
+    select: {
+      padding: '5px',
+      borderRadius: '5px'
+    },
+    downloadButton: {
+      backgroundColor: '#3498db',
+      color: 'white',
+      padding: '5px 10px',
       border: 'none',
-      borderRadius: '3px',
+      borderRadius: '5px',
       cursor: 'pointer',
-      backgroundColor: '#28a745',
-      color: '#fff',
+      transition: 'background-color 0.3s'
     },
-    btnRechazar: {
-      padding: '8px 16px',
-      marginLeft: '10px',
+    deleteButton: {
+      backgroundColor: '#e74c3c',
+      color: 'white',
+      padding: '5px 10px',
       border: 'none',
-      borderRadius: '3px',
+      borderRadius: '5px',
       cursor: 'pointer',
-      backgroundColor: '#dc3545',
-      color: '#fff',
-    },
-    btnHover: {
-      opacity: 0.9,
-    },
-    descarga: {
-      marginTop: '10px',
-    },
-    btnDescargar: {
-      textDecoration: 'none',
-      padding: '8px 16px',
-      border: '1px solid #007bff',
-      borderRadius: '3px',
-      backgroundColor: '#007bff',
-      color: '#fff',
-      cursor: 'pointer',
-    },
+      transition: 'background-color 0.3s'
+    }
   };
 
   return (
     <div style={styles.body}>
       <header style={styles.header}>
-        <div style={styles.buttons}>
-          <button
-            style={styles.button}
-            onMouseOver={(e) => (e.target.style.backgroundColor = styles.buttonHover.backgroundColor)}
-            onMouseOut={(e) => (e.target.style.backgroundColor = styles.button.backgroundColor)}
-            onClick={handleVolver}
-          >
-            Volver
-          </button>
+        <div style={styles.headerLeft}>
+          <Link to="/bienvenida" style={styles.button}>Volver</Link>
         </div>
+      
       </header>
 
-      <div style={styles.container}>
-        <h2 style={styles.h2}>Gestión de Solicitudes de Becas</h2>
-        <div style={styles.solicitudesList}>
-          {solicitudes.map((solicitud) => (
-            <div key={solicitud.id} style={styles.solicitud}>
-              <div style={styles.solicitudInfo}>
-                <h3 style={styles.solicitudH3}>{solicitud.nombre}</h3>
-                <p style={styles.solicitudP}>Correo Electrónico: {solicitud.correo}</p>
-                <p style={styles.solicitudP}>Tipo de Beca: {solicitud.tipoBeca}</p>
-                <p style={styles.solicitudP}>Estado: {solicitud.estado}</p>
-              </div>
-              <div style={styles.acciones}>
-                <button
-                  style={styles.btnAprobar}
-                  onMouseOver={(e) => (e.target.style.opacity = styles.btnHover.opacity)}
-                  onMouseOut={(e) => (e.target.style.opacity = 1)}
-                >
-                  Aprobar
-                </button>
-                <button
-                  style={styles.btnRechazar}
-                  onMouseOver={(e) => (e.target.style.opacity = styles.btnHover.opacity)}
-                  onMouseOut={(e) => (e.target.style.opacity = 1)}
-                >
-                  Rechazar
-                </button>
-              </div>
-              <div style={styles.descarga}>
-                <a href={solicitud.archivo} style={styles.btnDescargar} download>
-                  Descargar Archivo
-                </a>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <main style={styles.main}>
+        <section style={styles.section}>
+          <h2 style={styles.title}>Gestión Administrativa de Solicitudes</h2>
+          <div className="consulta-table" style={styles.consultaTable}>
+            <h3 style={styles.title}>Solicitudes Recibidas</h3>
+            <table id="solicitudes-table" style={styles.table}>
+              <thead style={styles.thead}>
+                <tr>
+                  <th style={styles.th}>ID Solicitud</th>
+                  <th style={styles.th}>Tipo de Beca</th>
+                  <th style={styles.th}>Período Académico</th>
+                  <th style={styles.th}>Estado</th>
+                  <th style={styles.th}>Actualizar Estado</th>
+                  <th style={styles.th}>Documento</th>
+                  <th style={styles.th}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {solicitudes.map((solicitud, index) => (
+                  <tr key={index}>
+                    <td style={styles.td}>{index + 1}</td>
+                    <td style={styles.td}>{solicitud.tipoBeca}</td>
+                    <td style={styles.td}>{solicitud.periodoAcademico}</td>
+                    <td style={styles.td}>{solicitud.estado || 'Pendiente'}</td>
+                    <td style={styles.td}>
+                      <select
+                        value={solicitud.estado || 'Pendiente'}
+                        onChange={(e) => handleActualizarEstado(index, e.target.value)}
+                        style={styles.select}
+                      >
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En Revisión">En Revisión</option>
+                        <option value="En Proceso">En Proceso</option>
+                        <option value="Beca Aceptada">Beca Aceptada</option>
+                        <option value="Beca Rechazada">Beca Rechazada</option>
+                      </select>
+                    </td>
+                    <td style={styles.td}>
+                      {solicitud.archivo ? (
+                        <button className="download-button" onClick={() => handleFileDownload(solicitud.archivo, `solicitud_${index + 1}.pdf`)} style={styles.downloadButton}>
+                          Descargar
+                        </button>
+                      ) : (
+                        <span>No hay archivo</span>
+                      )}
+                    </td>
+                    <td style={styles.td}>
+                      <button className="delete-button" onClick={() => handleEliminarSolicitud(index)} style={styles.deleteButton}>
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
     </div>
   );
 };
