@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Consultabeca = () => {
-  const navigate = useNavigate();
   const [solicitud, setSolicitud] = useState(null);
   const [enviado, setEnviado] = useState(false);
   const [archivoCargado, setArchivoCargado] = useState(null);
@@ -225,7 +224,6 @@ const Consultabeca = () => {
       color: 'white',
       padding: '5px 10px',
       borderRadius: '5px',
-      cursor: 'pointer',
       transition: 'background-color 0.3s',
       display: 'inline-block',
       marginBottom: '0',
